@@ -1812,9 +1812,10 @@ function drawQPCR() {
   const YMAX = 5000000, THR = 10000;
   const toY = v => p.t + ch * (1 - v/YMAX);
   ctx.fillStyle = '#142018'; ctx.beginPath(); ctx.roundRect(0,0,W,H,8); ctx.fill();
+  const XMAX = 45;
   // vertical grid
-  [0,10,20,30,40].forEach(c => {
-    const x = p.l + (c/40)*cw;
+  [0,10,20,30,40,45].forEach(c => {
+    const x = p.l + (c/XMAX)*cw;
     ctx.strokeStyle = 'rgba(58,140,94,0.12)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,p.t+ch); ctx.stroke();
     ctx.fillStyle = '#4a7a5a'; ctx.font = '8px JetBrains Mono';
@@ -1841,9 +1842,9 @@ function drawQPCR() {
   curves.forEach((cv2) => {
     ctx.beginPath(); ctx.strokeStyle = cv2.col; ctx.lineWidth = 2.5;
     ctx.shadowColor = cv2.col + '88'; ctx.shadowBlur = 7;
-    for (let c=0; c<=40; c+=0.2) {
+    for (let c=0; c<=XMAX; c+=0.2) {
       const rn = sig(c, cv2.c0, cv2.k) * YMAX * 0.9;
-      const x = p.l + (c/40)*cw;
+      const x = p.l + (c/XMAX)*cw;
       const y = toY(rn);
       c===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
     }
@@ -1858,7 +1859,7 @@ function drawQPCR() {
   ctx.textAlign = 'left'; ctx.fillText('Threshold', p.l+6, thy-3);
   // Ct markers at cycles 18 and 28
   [{c:18,col:'#5eba82'},{c:28,col:'#c43030'}].forEach(ct => {
-    const x = p.l + (ct.c/40)*cw;
+    const x = p.l + (ct.c/XMAX)*cw;
     ctx.setLineDash([4,3]); ctx.strokeStyle = ct.col+'99'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x,p.t); ctx.lineTo(x,p.t+ch); ctx.stroke();
     ctx.setLineDash([]);
