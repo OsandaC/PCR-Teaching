@@ -1809,7 +1809,7 @@ function drawQPCR() {
   const cv = document.getElementById('qc'), ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height, p = {l:48,r:22,t:18,b:44};
   const cw = W-p.l-p.r, ch = H-p.t-p.b;
-  const YMAX = 5000000, THR = 20000;
+  const YMAX = 5000000, THR = 100000;
   const toY = v => p.t + ch * (1 - v/YMAX);
   ctx.fillStyle = '#142018'; ctx.beginPath(); ctx.roundRect(0,0,W,H,8); ctx.fill();
   const XMAX = 45;
