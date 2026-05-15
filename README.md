@@ -2,23 +2,28 @@
 
 ## Overview
 
-A single-file HTML5 interactive teaching module (`pcr_teaching_module v2.html`) covering the full PCR workflow — from the discovery of Taq polymerase through qPCR quantification. All content, styling, SVG animations, and logic live in one file with zero external dependencies beyond Google Fonts.
+A single-file HTML5 interactive teaching module (`pcr_teaching_module v3.html`) covering the full PCR workflow — from the discovery of Taq polymerase through qPCR quantification. All content, styling, SVG animations, and logic live in one file with zero external dependencies beyond Google Fonts.
 
 Designed for tablet/display use (`html { zoom: 1.4 }`), dark theme, landscape orientation.
+
+**Live site:** https://0dda9245.pcr-teaching.pages.dev/ (Cloudflare Pages — auto-deploys from `main` branch)
 
 ---
 
 ## File Structure
 
 ```
-pcr_teaching_module v2.html   ← the entire module
-download.jpg                  ← Yellowstone hot springs photo (S1)
-Longitudinal-view-of-...webp  ← Thermus aquaticus TEM image (S1)
-chien-et-al-1976_Page_1.png   ← Chien et al. 1976 paper image (S1)
-README.md                     ← this file
+pcr_teaching_module v3.html          ← the entire module (working file)
+index.html                           ← exact copy of v3.html — required by Cloudflare Pages
+download.jpg                         ← Yellowstone hot springs photo (S1)
+Longitudinal-view-of-...webp         ← Thermus aquaticus TEM image (S1)
+chien-et-al-1976_Page_1.png          ← Chien et al. 1976 paper image (S1)
+README.md                            ← this file
 ```
 
 All images must be in the same directory as the HTML file.
+
+**Deployment workflow:** Edit `pcr_teaching_module v3.html` → copy to `index.html` → `git add` both → commit → push. Cloudflare Pages auto-redeploys from `main` in ~30 seconds. `index.html` must always be kept in sync with v3 before each push.
 
 ---
 
@@ -224,6 +229,41 @@ Static SVG diagram showing: mRNA box → reverse transcriptase arrow → cDNA bo
 ### S9 — qPCR
 
 Canvas-drawn (`#qc`, 460×280px) sigmoidal amplification curves. Two curves: high template (low Ct, green) and low template (high Ct, red). Drawn once on entry via `drawQPCR()`.
+
+#### drawQPCR() — full implementation notes
+
+**Scale:** Linear Y-axis only. Do NOT switch to log scale — the near-zero threshold position is intentional and matches real qPCR software display (user confirmed: "that is how the real world graph works").
+
+**Key constants:**
+```javascript
+const YMAX = 5000000;   // Y-axis max (5 million RFU)
+const THR  = 100000;    // threshold line (100k) — dashed yellow
+const XMAX = 45;        // x-axis cycles (extended past 40 to show flat plateau tails)
+```
+
+**Y-axis mapping (linear):**
+```javascript
+const toY = v => p.t + ch * (1 - v/YMAX);
+```
+Y ticks: 0, 1M, 2M, 3M, 4M, 5M. X ticks: 0, 10, 20, 30, 40, 45.
+
+**Sigmoid curves:**
+```javascript
+const sig = (c, c0, k) => 1 / (1 + Math.exp(-k * (c - c0)));
+```
+
+| Curve | Ct | c0 | k | Colour |
+|---|---|---|---|---|
+| Green (high template) | 18 | 29.1 | 0.55 | `#5eba82` |
+| Red (low template) | 28 | 34.8 | 0.90 | `#c43030` |
+
+c0 is calculated to preserve the exact Ct threshold crossing: `c0 = Ct + ln(YMAX*0.9/THR - 1) / k`
+
+The red curve uses a steeper k=0.9 (vs green's k=0.55) so it plateaus within the 45-cycle window. Both curves reach a visible flat tail before cycle 45.
+
+**Ct markers:** Vertical dashed lines at cycles 18 (green) and 28 (red), labelled below the x-axis.
+
+**Legend:** Top-left of canvas — "High template (low Ct)" in green, "Low template (high Ct)" in red.
 
 ---
 
